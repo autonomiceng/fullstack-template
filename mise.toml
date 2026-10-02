@@ -1,0 +1,111 @@
+[tools]
+node = "24.19.0"
+bun = "1.4.2"
+"aqua:rhysd/actionlint" = "1.7.12"
+"github:editorconfig-checker/editorconfig-checker" = { version = "4.0.2", rename_exe = "editorconfig-checker" }
+shellcheck = "0.11.0"
+python = "3.13.14"
+uv = "0.12.22"
+"pipx:towncrier" = { version = "26.9.0", uvx = true, uvx_args = "--python 3.13.14 --no-python-downloads" }
+
+[tasks.check]
+description = "Check application code, API contract and repository conventions without rewriting sources"
+depends = ["format:check", "check:editorconfig", "check:workflows", "check:scripts", "changelog:check", "app:check", "openapi:check"]
+
+[tasks."pr:check"]
+description = "Run all current checks and tests before opening or updating a PR"
+depends = ["check", "test"]
+
+[tasks."format:check"]
+description = "Check repository documentation and tooling configuration without rewriting them"
+depends = ["deps:install"]
+run = "./node_modules/.bin/vp fmt --config vite.config.ts --check '*.md' '.github/**/*.{md,yml}' 'changes/**/*.md' '.coderabbit.yaml' 'compose.yaml' package.json tsconfig.json vite.config.ts drizzle.config.ts playwright.config.ts 'index.html' 'src/**/*.{ts,tsx,css}' 'scripts/*.ts' 'tests/**/*.ts' 'docs/**/*.md'"
+
+[tasks."deps:install"]
+description = "Install pinned project tools from the frozen Bun lockfile"
+run = "bun install --frozen-lockfile"
+
+[tasks."check:editorconfig"]
+description = "Validate text files against EditorConfig"
+run = "editorconfig-checker"
+
+[tasks."check:workflows"]
+description = "Validate GitHub Actions workflows"
+run = "actionlint"
+
+[tasks."check:scripts"]
+description = "Check the formatting, changelog and test tasks"
+run = "shellcheck .mise/tasks/format .mise/tasks/test/format .mise/tasks/changelog/*"
+
+[tasks.test]
+description = "Run tooling safeguards and isolated application tests"
+depends = ["test:format", "test:changelog", "test:app"]
+
+[tasks."test:changelog"]
+description = "Test fragment policy, comparison context and read-only previews"
+run = "python -m unittest discover -s tests -p 'test_changelog.py' -v"
+
+[tasks."app:check"]
+description = "Lint and type-check application, tests and tooling through Vite+"
+depends = ["deps:install"]
+run = "./node_modules/.bin/vp check --no-fmt"
+
+[tasks.build]
+description = "Build the browser application and enforce server/browser separation"
+depends = ["deps:install"]
+run = "./node_modules/.bin/vp build"
+
+[tasks."openapi:generate"]
+description = "Update the versioned OpenAPI document from runtime schemas"
+depends = ["deps:install"]
+run = "bun scripts/openapi.ts"
+
+[tasks."openapi:check"]
+description = "Check that the committed API contract matches runtime schemas"
+depends = ["deps:install"]
+run = "bun scripts/openapi.ts --check"
+
+[tasks."db:migrate"]
+description = "Apply committed SQL migrations to explicit DATABASE_URL"
+depends = ["deps:install"]
+run = "bun scripts/migrate.ts"
+
+[tasks."db:generate"]
+description = "Generate a new migration after an intentional schema change"
+depends = ["deps:install"]
+run = "./node_modules/.bin/drizzle-kit generate"
+
+[tasks."browser:install"]
+description = "Install the pinned Chromium browser; CI also installs system libraries"
+depends = ["deps:install"]
+run = 'if [ "${CI:-}" = "true" ]; then mise run browser:deps; fi; ./node_modules/.bin/playwright install chromium'
+
+[tasks."test:app"]
+description = "Run six backend cases and one browser journey against an isolated database"
+depends = ["build", "browser:install"]
+run = "bun scripts/local.ts test"
+
+[tasks."test:server"]
+description = "Run backend cases against an explicitly supplied TEST_DATABASE_URL"
+depends = ["deps:install"]
+run = "bun test tests/server"
+
+[tasks.demo]
+description = "Run the built example locally with this checkout's persistent database"
+depends = ["build"]
+run = "bun scripts/local.ts demo"
+
+[tasks.dev]
+description = "Run the Vite development server and local Bun API"
+depends = ["deps:install"]
+run = "bun scripts/local.ts dev"
+
+[tasks."demo:destroy"]
+description = "Remove this inactive checkout's local database volume"
+depends = ["deps:install"]
+run = "bun scripts/local.ts destroy"
+
+[tasks."browser:deps"]
+description = "Install Chromium system libraries (requires administrator privileges on Linux)"
+depends = ["deps:install"]
+run = "./node_modules/.bin/playwright install-deps chromium"

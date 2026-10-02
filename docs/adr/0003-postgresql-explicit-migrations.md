@@ -1,0 +1,3 @@
+# Use PostgreSQL with Drizzle and explicit SQL migrations
+
+PostgreSQL owns durable Notes state, with Drizzle providing typed schema and direct queries over a supplied connection rather than a speculative repository abstraction. Checked-in SQL migrations run explicitly before serving traffic, making database changes reviewable and preventing application startup from changing shared schema; automatic schema push would simplify local setup at the cost of deployment control. This requires a database service and deliberate migration execution, and persistence tests therefore use real isolated PostgreSQL.
