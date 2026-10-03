@@ -23,6 +23,18 @@ Use Conventional Commits: `<type>(scope): <description>`. Describe the change's 
 
 Keep durable documentation with the behavior it explains. Add an ADR for a consequential tradeoff that would otherwise surprise a future maintainer. Plans, research notes and review transcripts stay in private planning storage; synthetic agent scratch can use ignored directories. Update documentation when behavior or meaning changes.
 
+Finish corrections and remove superseded code within the unmerged PR. Follow
+[the cleanup and history policy](CONTRIBUTING.md#commit-history-and-release-notes)
+when replacing review iterations or an unreleased schema; preserve released
+contracts and migration history used by real installations.
+
+## Interface
+
+Application demos start at the actual shared root and show navigation to changed
+behavior on desktop and narrow screens. When introducing authentication, identify
+public and protected routes explicitly and verify navigation and access at both
+boundaries. Notes remains the approved anonymous local demo.
+
 ## Delegation
 
 Follow the task’s review process. Give parallel agents separate worktrees or explicit file ownership. One integrator owns shared manifests, migrations, CI and final integration. Independent code and spec reviews precede PR submission; the implementation author does not replace either review. Read the delivery sequence in [CONTRIBUTING.md](CONTRIBUTING.md).
@@ -37,6 +49,10 @@ For new modules or structural changes, follow the reviewed architecture and modu
 - Make dates, money, identity and tenant boundaries explicit.
 - Test observable behavior and plausible failures. Use real database integration tests when persistence matters.
 - Keep public tooling independent of private repositories and local machine configuration.
+
+## Interface
+
+Use one page title and one useful heading per section. Each label adds information; remove titles and subtitles that repeat visible context. Use shared typography roles and consistent spacing. Keep comparison fields visible and place warnings beside the fields they explain. Use disclosure when it removes substantial secondary information. Review desktop and narrow layouts for redundant copy, visual clutter and hidden navigation.
 
 ## Finish
 

@@ -13,6 +13,10 @@ import { createNote, listNotes } from "./notes";
 
 const notFound = { error: { code: "NOT_FOUND", message: "Route not found." } };
 
+/**
+ * Builds anonymous Notes routes and OpenAPI without listening or owning the database.
+ * With assetsDir, serves the SPA while preserving API errors; storage errors are sanitized.
+ */
 export function createApp({
   db,
   assetsDir,

@@ -39,7 +39,7 @@ run = "shellcheck .mise/tasks/format .mise/tasks/test/format .mise/tasks/changel
 
 [tasks.test]
 description = "Run tooling safeguards and isolated application tests"
-depends = ["test:format", "test:changelog", "test:app"]
+depends = ["test:format", "test:changelog", "test:documentation", "test:app"]
 
 [tasks."test:changelog"]
 description = "Test fragment policy, comparison context and read-only previews"
@@ -109,3 +109,8 @@ run = "bun scripts/local.ts destroy"
 description = "Install Chromium system libraries (requires administrator privileges on Linux)"
 depends = ["deps:install"]
 run = "./node_modules/.bin/playwright install-deps chromium"
+
+[tasks."test:documentation"]
+description = "Verify public documentation requirements and private helper exclusions"
+depends = ["deps:install"]
+run = "bun scripts/check-documentation.ts"

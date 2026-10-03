@@ -4,6 +4,9 @@ reviews:
   request_changes_workflow: false
   poem: false
   sequence_diagrams: false
+  pre_merge_checks:
+    docstrings:
+      mode: off
   path_instructions:
     - path: "**/*"
       instructions: >-
@@ -12,6 +15,14 @@ reviews:
         Give a failure scenario and supporting evidence for each finding.
         Check the approved scope and reviewed architecture or module contracts;
         identify missing decisions rather than inventing interfaces.
+        Apply the cleanup, architecture and interface review expectations in
+        AGENTS.md and CONTRIBUTING.md.
+        Review public callable contracts for useful explanations of side effects,
+        retry behavior, failure outcomes and caller obligations. Review permissions
+        and tenant scope when the contract has an auth or tenant boundary.
+        Local lint enforces scoped JSDoc presence; assess accuracy and usefulness
+        without requiring comments on every internal helper or repeating types.
+        The Notes example is an approved anonymous demo.
         Avoid formatter or style duplication and speculative abstractions.
         Public code, fixtures and documentation must remain reusable and free
         of private deployment details, credentials and production records.

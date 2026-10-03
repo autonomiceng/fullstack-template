@@ -36,5 +36,39 @@ export default defineConfig({
   lint: {
     ignorePatterns: ["dist/**", ".scratch/**", "node_modules/**"],
     options: { typeAware: true, typeCheck: true },
+    jsPlugins: [{ name: "jsdoc-js", specifier: "eslint-plugin-jsdoc" }],
+    overrides: [
+      {
+        files: [
+          "src/server/notes.ts",
+          "src/server/app.ts",
+          "src/server/db/connection.ts",
+          "src/web/api.ts",
+        ],
+        rules: {
+          "jsdoc-js/require-jsdoc": [
+            "error",
+            {
+              publicOnly: {
+                esm: true,
+                cjs: false,
+                window: false,
+                ancestorsOnly: false,
+              },
+              enableFixer: false,
+              require: {
+                FunctionDeclaration: true,
+                ArrowFunctionExpression: true,
+                FunctionExpression: true,
+              },
+            },
+          ],
+          "jsdoc-js/require-description": [
+            "error",
+            { contexts: ["any"], descriptionStyle: "body", exemptedBy: [] },
+          ],
+        },
+      },
+    ],
   },
 });
