@@ -38,12 +38,30 @@ mise owns the task graph and PR gate. Vite+ owns formatting, JavaScript lint, in
 
 The application suite contains six backend integration cases and one browser journey using isolated PostgreSQL. Run `mise run test:app` for that suite, `mise run app:check` for application lint and type checks, and `mise run build` for the frontend build. `openapi:check` detects drift in the generated contract; use `openapi:generate` when intentionally changing it. Every required task belongs in `pr:check` when its code arrives. Local checks and CI use the same mise gate with the changelog contexts described below.
 
+## Public interface documentation
+
+`mise run app:check` requires short JSDoc descriptions on public callable contracts
+in the four Notes modules selected in `vite.config.ts`. Document side effects,
+retry behavior, failure outcomes and caller obligations when they affect correct
+use. Explain permissions and tenant scope when a contract has an authentication
+or tenant boundary. Notes remains an approved anonymous local demo. Keep
+TypeScript as the source of parameter and return types; internal helpers, React
+components and test helpers have no comment quota.
+
+Reviewers check accuracy and usefulness, which comment presence cannot establish.
+CodeRabbit follows this policy with its blanket percentage check disabled. When
+adding a public entrypoint or re-exported factory, include its definition in the
+lint scope and extend `scripts/check-documentation.ts` as needed.
+`mise run test:documentation` tests missing and empty comments, documented exports
+and private helper exclusions in isolated fixtures using the real Vite+ config.
+Both tasks run in `pr:check`.
+
 ## Deliver a change
 
 1. Propose a small increment with a visible outcome and acceptance criteria. Obtain an independent adversarial plan review, address its findings, and get maintainer approval before implementation. A request to prepare a draft for review authorizes that draft only.
 2. Implement the agreed scope using the brief below. Keep private material outside the public checkout and use synthetic fixtures. Review dependency licenses before adding or copying code.
 3. Run `mise run pr:check` and the relevant acceptance tasks, then obtain independent code and spec reviews before submitting a PR. Address findings and report unresolved limitations.
-4. Open a focused PR describing the problem, resulting behavior, changelog fragment and verification. Include the release-note preview from the reviewed revision. Application changes include a runnable synthetic-data demo of that revision. Documentation and repository setup changes use the changed files and tooling checks as their review artifact.
+4. Open a focused PR describing the problem, resulting behavior, changelog fragment and verification. Include the release-note preview from the reviewed revision. Application changes include a runnable synthetic-data demo of that revision, starting at the actual shared root and navigating to the changed behavior on desktop and narrow screens. When authentication is introduced, identify public and protected routes and demonstrate both access boundaries. Documentation and repository setup changes use the changed files and tooling checks as their review artifact.
 5. Address CodeRabbit feedback when available, explaining findings rejected on technical grounds. Report an unavailable review integration. Rerun affected checks and demonstrate fixes until accepted.
 6. Merge after required CI checks pass and the owner approves the reviews and exact-revision demo or document/preview review. Use `gh pr merge --squash --match-head-commit <reviewed-head> --subject '<benefit-focused title>' --body-file <message-file>` with an explicitly written final message. Keep automatic merging and administrative bypasses disabled. Honor explicit instructions to stop before committing, pushing or merging.
 
@@ -66,11 +84,26 @@ The integrator supplies this brief before delegating work:
 
 Review findings identify a concrete defect, a plausible failure and supporting evidence. Reviewers check the accepted scope and contracts; tooling handles formatting and style preferences. Keep private paths, identities and review transcripts out of public artifacts. Establish application directories through the reviewed architecture plan when application work begins.
 
+The independent code review also checks unused code and exports, duplicate
+helpers, obsolete compatibility or migration scaffolding, and module ownership
+and dependency directions against the reviewed architecture. Cleanup findings
+name the unnecessary complexity and a concrete simpler alternative; verify their
+resolution before merge. Interface reviews use the rendered desktop and narrow
+demos to verify accessible navigation and access to secondary actions and fields.
+
 Stop testing once the agreed checks pass. Broaden or repeat checks only for a relevant code change, failure or unresolved risk. Avoid coverage quotas, duplicate assertions across layers and tests that merely repeat implementation details. Authorization and data integrity require verification proportionate to their consequences.
 
 ## Commit history and release notes
 
 Default to one focused PR and one squash-merged commit. Write the final commit title and body in plain language: who benefits, what they can now do, and any meaningful limits. Review corrections become part of that final change. Describe internal tooling benefits honestly without claiming a new customer feature.
+
+Finish corrections and remove superseded code in the unmerged PR. Remove
+compatibility aliases, extra migrations and obsolete abstractions retained solely
+for discarded review iterations. A reviewed change may replace an unmerged
+initial schema used only by disposable synthetic demos, with an explicit demo
+reset as a separate operation. Preserve contracts and migration history used by
+released software or real installations, along with merged main and release
+history.
 
 Keep several commits only when each delivers an independently useful change. Fold corrections into their respective commits with fixup/autosquash before final review, coordinate with anyone using the branch, and rerun `mise run pr:check` afterwards. Preserve merged main and release history.
 

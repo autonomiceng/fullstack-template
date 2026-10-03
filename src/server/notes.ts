@@ -7,6 +7,7 @@ function toNote(row: typeof notes.$inferSelect): Note {
   return { ...row, createdAt: row.createdAt.toISOString() };
 }
 
+/** Lists the newest 100 Notes, breaking creation-time ties by descending ID. */
 export async function listNotes(db: Database): Promise<Note[]> {
   const rows = await db
     .select()
@@ -16,6 +17,10 @@ export async function listNotes(db: Database): Promise<Note[]> {
   return rows.map(toNote);
 }
 
+/**
+ * Stores a trimmed title; callers must validate it against CreateNoteSchema.
+ * Each call inserts a new Note, so retrying can create duplicates.
+ */
 export async function createNote(
   db: Database,
   input: CreateNoteInput,

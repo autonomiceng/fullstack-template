@@ -1,6 +1,7 @@
 import type { CreateNoteInput, Note } from "../shared/notes";
 
 export class ApiError extends Error {
+  /** Carries a caller-facing request failure; status is absent for network failures. */
   constructor(
     message: string,
     readonly status?: number,
@@ -46,10 +47,20 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return (await response.json()) as T;
 }
 
+/**
+ * Reads Notes from the shared origin; cancellation preserves the fetch abort error.
+ * Non-abort fetch failures and non-success HTTP responses reject with ApiError.
+ * Successful-response body read and parse errors propagate unchanged.
+ */
 export function listNotes(signal?: AbortSignal): Promise<Note[]> {
   return request<Note[]>("/api/notes", { signal });
 }
 
+/**
+ * Posts a new Note; initial fetch and non-success HTTP responses reject with ApiError.
+ * Successful-response body read and parse errors propagate unchanged.
+ * A lost response can follow a successful insert; retrying may create a duplicate.
+ */
 export function createNote(input: CreateNoteInput): Promise<Note> {
   return request<Note>("/api/notes", {
     method: "POST",
